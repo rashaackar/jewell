@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Namaz Time Poster Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep-teal:#0d3b34;
+    --deep-teal-2:#124a40;
+    --gold:#c9a04e;
+    --gold-light:#e6c878;
+    --ivory:#f6f1e4;
+    --ink:#1c2420;
+    --line:#dccfa4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Jost',sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, #16554a 0%, transparent 45%),
+      radial-gradient(circle at 85% 90%, #16554a 0%, transparent 45%),
+      var(--deep-teal);
+    color:var(--ivory);
+    min-height:100vh;
+  }
+  header{
+    padding:38px 24px 18px;
+    text-align:center;
+  }
+  header .eyebrow{
+    letter-spacing:.3em;
+    font-size:11px;
+    color:var(--gold-light);
+    text-transform:uppercase;
+  }
+  header h1{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:700;
+    font-size:clamp(28px,4vw,44px);
+    margin:6px 0 4px;
+    color:var(--ivory);
+  }
+  header p{
+    color:#cdd9d2;
+    font-size:14px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:20px 20px 60px;
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:28px;
+  }
+  @media (max-width:900px){
+    .wrap{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:rgba(246,241,228,0.04);
+    border:1px solid rgba(201,160,78,0.25);
+    border-radius:10px;
+    padding:22px;
+  }
+  .panel h2{
+    font-family:'Cormorant Garamond',serif;
+    font-size:20px;
+    margin:0 0 14px;
+    color:var(--gold-light);
+    border-bottom:1px solid rgba(201,160,78,0.25);
+    padding-bottom:10px;
+  }
+  label{
+    display:block;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#bcd0c8;
+    margin:14px 0 6px;
+  }
+  label.first{margin-top:0;}
+  input[type=text], input[type=time], select, textarea{
+    width:100%;
+    padding:9px 11px;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(0,0,0,0.18);
+    color:var(--ivory);
+    font-family:'Jost',sans-serif;
+    font-size:14px;
+  }
+  input::placeholder{color:#88998f;}
+  input:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--gold);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .prayer-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 14px;
+    margin-top:8px;
+  }
+  .prayer-row{
+    background:rgba(0,0,0,0.15);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:7px;
+    padding:10px 12px;
+  }
+  .prayer-row .pname{
+    font-family:'Cormorant Garamond',serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--gold-light);
+    margin-bottom:6px;
+  }
+  .upload-box{
+    border:1.5px dashed rgba(201,160,78,0.4);
+    border-radius:8px;
+    padding:16px;
+    text-align:center;
+    cursor:pointer;
+    font-size:12px;
+    color:#bcd0c8;
+    transition:border-color .15s;
+  }
+  .upload-box:hover{border-color:var(--gold);}
+  .upload-box img{max-height:60px;margin-bottom:6px;}
+  select{
+    appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23c9a04e'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+  }
+  .theme-swatches{display:flex;gap:8px;margin-top:8px;}
+  .swatch{
+    width:34px;height:34px;border-radius:50%;
+    cursor:pointer;border:2px solid transparent;
+    position:relative;
+  }
+  .swatch.active{border-color:var(--gold-light);}
+  button#downloadBtn{
+    width:100%;
+    margin-top:22px;
+    padding:14px;
+    border:none;
+    border-radius:7px;
+    background:linear-gradient(135deg,var(--gold-light),var(--gold));
+    color:#1c2420;
+    font-weight:600;
+    font-family:'Jost',sans-serif;
+    font-size:14px;
+    letter-spacing:.04em;
+    cursor:pointer;
+    transition:transform .12s;
+  }
+  button#downloadBtn:hover{transform:translateY(-1px);}
+  button#downloadBtn:active{transform:translateY(0);}
+
+  .preview-col{display:flex;flex-direction:column;align-items:center;}
+  .canvas-shell{
+    background:rgba(0,0,0,0.2);
+    border:1px solid rgba(201,160,78,0.2);
+    border-radius:10px;
+    padding:18px;
+    display:flex;
+    justify-content:center;
+  }
+  canvas{
+    max-width:100%;
+    height:auto;
+    border-radius:4px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.4);
+  }
+  .hint{
+    font-size:12px;
+    color:#9fb3a9;
+    margin-top:12px;
+    text-align:center;
+    max-width:420px;
+  }
+  .size-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .size-toggle button{
+    flex:1;
+    padding:8px 6px;
+    font-size:12px;
+    border-radius:6px;
+    border:1px solid rgba(201,160,78,0.3);
+    background:transparent;
+    color:#cdd9d2;
+    cursor:pointer;
+    font-family:'Jost',sans-serif;
+  }
+  .size-toggle button.active{
+    background:var(--gold);
+    color:#1c2420;
+    border-color:var(--gold);
+    font-weight:600;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">For Qazis &amp; Mosque Authorities</div>
+  <h1>Namaz Time Poster Generator</h1>
+  <p>Enter your authority name, symbol and the five daily prayer timings to design and download a printable poster.</p>
+</header>
+
+<div class="wrap">
+
+  <!-- FORM PANEL -->
+  <div class="panel">
+    <h2>Poster Details</h2>
+
+    <label class="first">Authority / Masjid Name</label>
+    <input type="text" id="authorityName" placeholder="e.g. Jamia Masjid Qazi Office" value="Jamia Masjid">
+
+    <label>Sub-title (optional)</label>
+    <input type="text" id="subTitle" placeholder="e.g. Office of the Qazi, City Name" value="Office of the Qazi">
+
+    <label>Symbol / Logo</label>
+    <div class="upload-box" id="uploadBox">
+      <div id="uploadPreviewWrap">📷 Click to upload authority symbol</div>
+      <input type="file" id="logoInput" accept="image/*" style="display:none;">
+    </div>
+
+    <label>City / Location (optional)</label>
+    <input type="text" id="cityName" placeholder="e.g. Lucknow, Uttar Pradesh">
+
+    <label>Effective Date / Validity</label>
+    <input type="text" id="validity" placeholder="e.g. Effective from 1 Rajab 1448 H" value="">
+
+    <h2 style="margin-top:24px;">Namaz Timings</h2>
+    <div class="prayer-grid" id="prayerGrid"></div>
+
+    <label>Jumu'ah (Friday) Time — optional</label>
+    <input type="time" id="jummaTime">
+
+    <h2 style="margin-top:24px;">Theme</h2>
+    <div class="theme-swatches" id="themeSwatches"></div>
+
+    <label style="margin-top:18px;">Footer Note (optional)</label>
+    <input type="text" id="footerNote" placeholder="e.g. Timings as per local moon sighting committee">
+
+    <button id="downloadBtn">⬇ Download Poster (PNG)</button>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="preview-col">
+    <div class="size-toggle">
+      <button class="active" data-w="1200" data-h="1600">Portrait A4</button>
+      <button data-w="1600" data-h="1200">Landscape</button>
+      <button data-w="1080" data-h="1350">Social Post</button>
+    </div>
+    <div class="canvas-shell">
+      <canvas id="posterCanvas" width="1200" height="1600"></canvas>
+    </div>
+    <p class="hint">This preview updates live as you type. Click "Download Poster" to save a high-resolution PNG ready for printing or sharing.</p>
+  </div>
+
+</div>
+
+<script>
+const prayers = [
+  {key:'fajr', label:'Fajr'},
+  {key:'sunrise', label:'Sunrise'},
+  {key:'zuhr', label:'Zuhr'},
+  {key:'asr', label:'Asr'},
+  {key:'maghrib', label:'Maghrib'},
+  {key:'isha', label:'Isha'}
+];
+
+const defaultTimes = {fajr:'04:45', sunrise:'06:05', zuhr:'12:30', asr:'16:15', maghrib:'18:45', isha:'20:00'};
+
+const prayerGrid = document.getElementById('prayerGrid');
+prayers.forEach(p=>{
+  const div = document.createElement('div');
+  div.className = 'prayer-row';
+  div.innerHTML = `<div class="pname">${p.label}</div>
+    <input type="time" id="time_${p.key}" value="${defaultTimes[p.key]}">`;
+  prayerGrid.appendChild(div);
+});
+
+const themes = [
+  {name:'Emerald & Gold', bg:'#0d3b34', bg2:'#124a40', accent:'#c9a04e', accentLight:'#e6c878', text:'#f6f1e4'},
+  {name:'Midnight & Silver', bg:'#10131c', bg2:'#1b2030', accent:'#9fb3d9', accentLight:'#dbe6f7', text:'#f2f3f7'},
+  {name:'Maroon & Cream', bg:'#3d1220', bg2:'#54192c', accent:'#d8a04a', accentLight:'#f0c98a', text:'#f7ede0'},
+  {name:'Ivory & Teal', bg:'#f6f1e4', bg2:'#efe6cf', accent:'#0d3b34', accentLight:'#15564a', text:'#1c2420', light:true}
+];
+let activeTheme = 0;
+
+const themeSwatches = document.getElementById('themeSwatches');
+themes.forEach((t,i)=>{
+  const sw = document.createElement('div');
+  sw.className = 'swatch' + (i===0?' active':'');
+  sw.style.background = `linear-gradient(135deg, ${t.bg}, ${t.accent})`;
+  sw.title = t.name;
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    activeTheme = i;
+    draw();
+  });
+  themeSwatches.appendChild(sw);
+});
+
+let logoImg = null;
+const logoInput = document.getElementById('logoInput');
+const uploadBox = document.getElementById('uploadBox');
+const uploadPreviewWrap = document.getElementById('uploadPreviewWrap');
+
+uploadBox.addEventListener('click', ()=>logoInput.click());
+logoInput.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      logoImg = img;
+      uploadPreviewWrap.innerHTML = '';
+      const previewImg = document.createElement('img');
+      previewImg.src = ev.target.result;
+      uploadPreviewWrap.appendChild(previewImg);
+      const txt = document.createElement('div');
+      txt.textContent = 'Symbol uploaded — click to change';
+      uploadPreviewWrap.appendChild(txt);
+      draw();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+const canvas = document.getElementById('posterCanvas');
+const ctx = canvas.getContext('2d');
+
+document.querySelectorAll('.size-toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.size-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    canvas.width = parseInt(btn.dataset.w);
+    canvas.height = parseInt(btn.dataset.h);
+    draw();
+  });
+});
+
+function fmtTime(value){
+  if(!value) return '--:--';
+  let [h,m] = value.split(':').map(Number);
+  const ampm = h>=12 ? 'PM' : 'AM';
+  h = h % 12;
+  if(h===0) h = 12;
+  return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function draw(){
+  const W = canvas.width, H = canvas.height;
+  const t = themes[activeTheme];
+  ctx.clearRect(0,0,W,H);
+
+  // background
+  const grad = ctx.createRadialGradient(W*0.2,H*0.1,0,W*0.2,H*0.1,W*0.9);
+  grad.addColorStop(0, t.bg2);
+  grad.addColorStop(1, t.bg);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  // decorative border
+  const margin = W*0.035;
+  ctx.strokeStyle = t.accent;
+  ctx.lineWidth = Math.max(2, W*0.0035);
+  roundRect(ctx, margin, margin, W-margin*2, H-margin*2, W*0.01);
+  ctx.stroke();
+
+  const innerMargin = margin + W*0.012;
+  ctx.strokeStyle = t.accentLight;
+  ctx.lineWidth = 1;
+  roundRect(ctx, innerMargin, innerMargin, W-innerMargin*2, H-innerMargin*2, W*0.008);
+  ctx.stroke();
+
+  let cursorY = margin + H*0.045;
+  const centerX = W/2;
+
+  // logo
+  const logoSize = W*0.13;
+  if(logoImg){
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, cursorY+logoSize/2, logoSize/2, 0, Math.PI*2);
+    ctx.closePath();
+    ctx.clip();
+    const ratio = Math.max(logoSize/logoImg.width, logoSize/logoImg.height);
+    const lw = logoImg.width*ratio, lh = logoImg.height*ratio;
+    ctx.drawImage(logoImg, centerX-lw/2, cursorY+logoSize/2-lh/2, lw, lh);
+    ctx.restore();
+    ctx.strokeStyle = t.accent;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(centerX, cursorY+logoSize/2, logoSize/2, 0, Math.PI*2);
+    ctx.stroke();
+    cursorY += logoSize + H*0.025;
+  } else {
+    // simple crescent placeholder
+    ctx.fillStyle = t.accent;
+    ctx.font = `${logoSize*0.6}px serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('☪', centerX, cursorY+logoSize*0.55);
+    cursorY += logoSize + H*0.01;
+  }
+
+  // authority name
+  const authorityName = document.getElementById('authorityName').value || 'Authority Name';
+  ctx.fillStyle = t.text;
+  ctx.textAlign = 'center';
+  ctx.font = `700 ${W*0.058}px 'Cormorant Garamond', serif`;
+  wrapText(ctx, authorityName, centerX, cursorY, W*0.82, W*0.066);
+  const nameLines = getWrapLineCount(ctx, authorityName, W*0.82);
+  cursorY += W*0.066*nameLines + H*0.012;
+
+  // subtitle
+  const subTitle = document.getElementById('subTitle').value;
+  if(subTitle){
+    ctx.fillStyle = t.accentLight;
+    ctx.font = `500 ${W*0.022}px 'Jost', sans-serif`;
+    ctx.fillText(subTitle.toUpperCase(), centerX, cursorY);
+    cursorY += H*0.025;
+  }
+
+  const cityName = document.getElementById('cityName').value;
+  if(cityName){
+    ctx.fillStyle = t.text;
+    ctx.globalAlpha = 0.75;
+    ctx.font = `400 ${W*0.018}px 'Jost', sans-serif`;
+    ctx.fillText(cityName, centerX, cursorY);
+    ctx.globalAlpha = 1;
+    cursorY += H*0.028;
+  }
+
+  // divider
+  cursorY += H*0.012;
+  drawOrnamentDivider(ctx, centerX, cursorY, W*0.5, t.accent);
+  cursorY += H*0.035;
+
+  // "NAMAZ TIMINGS" heading
+  ctx.fillStyle = t.accent;
+  ctx.font = `600 ${W*0.03}px 'Cormorant Garamond', serif`;
+  ctx.fillText('NAMAZ  TIMINGS', centerX, cursorY);
+  cursorY += H*0.045;
+
+  // prayer table
+  const tableTop = cursorY;
+  const tableW = W - margin*2 - W*0.08;
+  const tableLeft = (W-tableW)/2;
+  const rowH = H*0.072;
+  const validPrayers = prayers.filter(p=>document.getElementById(`time_${p.key}`).value);
+
+  validPrayers.forEach((p,i)=>{
+    const rowY = tableTop + i*rowH;
+    if(i % 2 === 0){
+      ctx.fillStyle = t.accent;
+      ctx.globalAlpha = t.light ? 0.08 : 0.12;
+      roundRect(ctx, tableLeft, rowY, tableW, rowH*0.86, 8);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    // name
+    ctx.textAlign = 'left';
+    ctx.fillStyle = t.text;
+    ctx.font = `600 ${W*0.032}px 'Cormorant Garamond', serif`;
+    ctx.fillText(p.label, tableLeft + W*0.035, rowY + rowH*0.55);
+
+    // dotted line
+    ctx.save();
+    ctx.strokeStyle = t.accent;
+    ctx.globalAlpha = 0.4;
+    ctx.setLineDash([2, 6]);
+    ctx.beginPath();
+    ctx.moveTo(tableLeft + W*0.20, rowY + rowH*0.45);
+    ctx.lineTo(tableLeft + tableW - W*0.16, rowY + rowH*0.45);
+    ctx.stroke();
+    ctx.restore();
+
+    // time
+    ctx.textAlign = 'right';
+    ctx.fillStyle = t.accentLight;
+    ctx.font = `700 ${W*0.034}px 'Jost', sans-serif`;
+    const timeVal = document.getElementById(`time_${p.key}`).value;
+    ctx.fillText(fmtTime(timeVal), tableLeft + tableW - W*0.035, rowY + rowH*0.55);
+  });
+
+  cursorY = tableTop + validPrayers.length*rowH + H*0.015;
+
+  // Jumma
+  const jummaTime = document.getElementById('jummaTime').value;
+  if(jummaTime){
+    ctx.fillStyle = t.accent;
+    ctx.globalAlpha = 0.85;
+    roundRect(ctx, tableLeft, cursorY, tableW, rowH*0.9, 8);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.textAlign='left';
+    ctx.fillStyle = t.light ? t.text : '#1c2420';
+    ctx.font = `700 ${W*0.034}px 'Cormorant Garamond', serif`;
+    ctx.fillText("JUMU'AH (FRIDAY)", tableLeft + W*0.035, cursorY + rowH*0.55);
+    ctx.textAlign='right';
+    ctx.font = `700 ${W*0.034}px 'Jost', sans-serif`;
+    ctx.fillText(fmtTime(jummaTime), tableLeft + tableW - W*0.035, cursorY + rowH*0.55);
+    cursorY += rowH*0.9 + H*0.025;
+  }
+
+  // validity
+  const validity = document.getElementById('validity').value;
+  if(validity){
+    ctx.textAlign='center';
+    ctx.fillStyle = t.accentLight;
+    ctx.font = `500 italic ${W*0.02}px 'Cormorant Garamond', serif`;
+    ctx.fillText(validity, centerX, cursorY + H*0.012);
+    cursorY += H*0.035;
+  }
+
+  // footer
+  const footerNote = document.getElementById('footerNote').value;
+  const footerY = H - margin - H*0.045;
+  drawOrnamentDivider(ctx, centerX, footerY - H*0.03, W*0.35, t.accent);
+  ctx.textAlign='center';
+  ctx.fillStyle = t.text;
+  ctx.globalAlpha = 0.7;
+  ctx.font = `400 ${W*0.015}px 'Jost', sans-serif`;
+  ctx.fillText(footerNote || 'Timings are subject to local moon sighting confirmation', centerX, footerY);
+  ctx.globalAlpha = 1;
+}
+
+function drawOrnamentDivider(ctx, cx, y, w, color){
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - w/2, y);
+  ctx.lineTo(cx - 14, y);
+  ctx.moveTo(cx + 14, y);
+  ctx.lineTo(cx + w/2, y);
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(cx, y, 5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = '';
+  let lines = [];
+  for(let n=0;n<words.length;n++){
+    const testLine = line + words[n] + ' ';
+    if(ctx.measureText(testLine).width > maxWidth && n > 0){
+      lines.push(line);
+      line = words[n] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line);
+  let startY = y;
+  lines.forEach((l,i)=>{
+    ctx.fillText(l.trim(), x, startY + i*lineHeight);
+  });
+}
+function getWrapLineCount(ctx, text, maxWidth){
+  const words = text.split(' ');
+  let line = '';
+  let count = 1;
+  for(let n=0;n<words.length;n++){
+    const testLine = line + words[n] + ' ';
+    if(ctx.measureText(testLine).width > maxWidth && n > 0){
+      count++;
+      line = words[n] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  return count;
+}
+
+// live update on any input change
+document.querySelectorAll('input').forEach(el=>{
+  el.addEventListener('input', draw);
+});
+
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  draw();
+  const link = document.createElement('a');
+  const name = (document.getElementById('authorityName').value || 'namaz-poster').replace(/\s+/g,'_');
+  link.download = `${name}_namaz_poster.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+// initial draw once fonts are ready
+document.fonts.ready.then(draw);
+window.addEventListener('load', draw);
+draw();
+</script>
+
+</body>
+</html>
